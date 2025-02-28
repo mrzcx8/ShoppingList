@@ -93,7 +93,7 @@
                 <td>${quantity}</td>
                 <td>${unit}</td>
                 <td>${total.toFixed(2)}</td>
-                <td><button onclick="removeItem(this, ${total})">X</button></td>
+                <td><button onclick="removeItem(this, ${total.toFixed(2)})">X</button></td>
             `;
             
             updateTotal(total);
@@ -164,7 +164,7 @@
                         <td>${item.quantity}</td>
                         <td>${item.unit}</td>
                         <td>${item.total}</td>
-                        <td><button onclick="removeItem(this, ${item.total})">X</button></td>
+                        <td><button onclick="removeItem(this, ${parseFloat(item.total).toFixed(2)})">X</button></td>
                     `;
                 });
                 document.getElementById("total").innerText = data.total;
