@@ -45,9 +45,16 @@
     <input type="text" id="item" placeholder="Item Name">
     <input type="number" id="price" placeholder="Price (RM)" step="0.01">
     <input type="number" id="quantity" placeholder="Qty" value="1">
+    <select id="unit">
+        <option value="pcs">Pcs</option>
+        <option value="kg">KG</option>
+        <option value="g">Gram</option>
+    </select>
     <button onclick="addItem()">Add</button>
     <button onclick="clearList()">Clear List</button>
     <button onclick="copyList()">Copy All List</button>
+    <button onclick="saveList()">Save to Device</button>
+    <button onclick="loadList()">Load Saved List</button>
     
     <table>
         <thead>
@@ -55,6 +62,7 @@
                 <th>Item</th>
                 <th>Price (RM)</th>
                 <th>Qty</th>
+                <th>Unit</th>
                 <th>Total (RM)</th>
                 <th>Action</th>
             </tr>
@@ -68,7 +76,8 @@
         function addItem() {
             let item = document.getElementById("item").value;
             let price = parseFloat(document.getElementById("price").value);
-            let quantity = parseInt(document.getElementById("quantity").value);
+            let quantity = parseFloat(document.getElementById("quantity").value);
+            let unit = document.getElementById("unit").value;
             
             if (!item || isNaN(price) || isNaN(quantity) || price <= 0 || quantity <= 0) {
                 alert("Please enter valid details");
@@ -82,20 +91,24 @@
             let cell3 = row.insertCell(2);
             let cell4 = row.insertCell(3);
             let cell5 = row.insertCell(4);
+            let cell6 = row.insertCell(5);
             
             cell1.innerHTML = `<input type='text' value='${item}' oninput='editItem(this)'>`;
             cell2.innerHTML = `<input type='number' value='${price.toFixed(2)}' step='0.01' oninput='editItem(this)'>`;
             cell3.innerHTML = `<input type='number' value='${quantity}' oninput='editItem(this)'>`;
-            cell4.innerHTML = (price * quantity).toFixed(2);
-            cell5.innerHTML = `<button onclick="removeItem(this, ${price * quantity})">X</button>`;
+            cell4.innerHTML = unit;
+            cell5.innerHTML = (price * quantity).toFixed(2);
+            cell6.innerHTML = `<button onclick="removeItem(this, ${price * quantity})">X</button>`;
             
             updateTotal(price * quantity);
+            saveList();
         }
         
         function removeItem(button, amount) {
             let row = button.parentElement.parentElement;
             row.remove();
             updateTotal(-amount);
+            saveList();
         }
         
         function updateTotal(amount) {
@@ -107,6 +120,7 @@
         function clearList() {
             document.getElementById("list").innerHTML = "";
             document.getElementById("total").innerText = "0.00";
+            localStorage.removeItem("shoppingList");
         }
         
         function copyList() {
@@ -117,8 +131,9 @@
                 let item = cells[0].children[0].value;
                 let price = cells[1].children[0].value;
                 let quantity = cells[2].children[0].value;
-                let total = cells[3].innerText;
-                items.push(`${item} - RM${price} x ${quantity} = RM${total}`);
+                let unit = cells[3].innerText;
+                let total = cells[4].innerText;
+                items.push(`${item} - RM${price} x ${quantity} ${unit} = RM${total}`);
             }
             let totalAmount = document.getElementById("total").innerText;
             let textToCopy = items.join("\n") + `\nTotal: RM${totalAmount}`;
@@ -129,17 +144,18 @@
             });
         }
         
-        function editItem(input) {
-            let row = input.parentElement.parentElement;
-            let price = parseFloat(row.cells[1].children[0].value);
-            let quantity = parseInt(row.cells[2].children[0].value);
-            let totalCell = row.cells[3];
-            let oldTotal = parseFloat(totalCell.innerText);
-            
-            if (!isNaN(price) && !isNaN(quantity) && price > 0 && quantity > 0) {
-                let newTotal = price * quantity;
-                totalCell.innerText = newTotal.toFixed(2);
-                updateTotal(newTotal - oldTotal);
+        function saveList() {
+            let listContent = document.getElementById("list").innerHTML;
+            let totalAmount = document.getElementById("total").innerText;
+            localStorage.setItem("shoppingList", JSON.stringify({ list: listContent, total: totalAmount }));
+        }
+        
+        function loadList() {
+            let savedList = localStorage.getItem("shoppingList");
+            if (savedList) {
+                let data = JSON.parse(savedList);
+                document.getElementById("list").innerHTML = data.list;
+                document.getElementById("total").innerText = data.total;
             }
         }
     </script>
