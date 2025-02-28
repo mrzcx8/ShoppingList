@@ -53,8 +53,6 @@
     <button onclick="addItem()">Add</button>
     <button onclick="clearList()">Clear List</button>
     <button onclick="copyList()">Copy All List</button>
-    <button onclick="saveList()">Save to Device</button>
-    <button onclick="loadList()">Load Saved List</button>
     
     <table>
         <thead>
@@ -97,14 +95,12 @@
             `;
             
             updateTotal(total);
-            saveList();
         }
         
         function removeItem(button, amount) {
             let row = button.parentElement.parentElement;
             row.remove();
             updateTotal(-amount);
-            saveList();
         }
         
         function updateTotal(amount) {
@@ -116,7 +112,6 @@
         function clearList() {
             document.getElementById("list").innerHTML = "";
             document.getElementById("total").innerText = "0.00";
-            localStorage.removeItem("shoppingList");
         }
         
         function copyList() {
@@ -133,42 +128,6 @@
             }).catch(() => {
                 alert("Failed to copy list");
             });
-        }
-        
-        function saveList() {
-            let rows = document.getElementById("list").rows;
-            let data = [];
-            for (let row of rows) {
-                let cells = row.cells;
-                data.push({
-                    item: cells[0].innerText,
-                    price: cells[1].innerText,
-                    quantity: cells[2].innerText,
-                    unit: cells[3].innerText,
-                    total: cells[4].innerText
-                });
-            }
-            localStorage.setItem("shoppingList", JSON.stringify({ list: data, total: document.getElementById("total").innerText }));
-        }
-        
-        function loadList() {
-            let savedList = localStorage.getItem("shoppingList");
-            if (savedList) {
-                let data = JSON.parse(savedList);
-                document.getElementById("list").innerHTML = "";
-                data.list.forEach(item => {
-                    let row = document.getElementById("list").insertRow();
-                    row.innerHTML = `
-                        <td>${item.item}</td>
-                        <td>${item.price}</td>
-                        <td>${item.quantity}</td>
-                        <td>${item.unit}</td>
-                        <td>${item.total}</td>
-                        <td><button onclick="removeItem(this, ${parseFloat(item.total).toFixed(2)})">X</button></td>
-                    `;
-                });
-                document.getElementById("total").innerText = data.total;
-            }
         }
     </script>
 </body>
